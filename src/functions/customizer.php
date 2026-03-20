@@ -99,3 +99,16 @@ require get_template_directory() . '/functions/customizer/typography.php';
 require get_template_directory() . '/functions/customizer/lightbox-settings.php';
 require get_template_directory() . '/functions/customizer/gallery-unified.php';
 require get_template_directory() . '/functions/customizer/collection-advanced.php';
+
+/* New customizer options added in 2.10.0 */
+require get_template_directory() . '/functions/customizer/header-builder.php';
+require get_template_directory() . '/functions/customizer/footer-builder.php';
+require get_template_directory() . '/functions/customizer/sidebar-settings.php';
+require get_template_directory() . '/functions/customizer/breadcrumb-settings.php';
+require get_template_directory() . '/functions/customizer/link-styles.php';
+require get_template_directory() . '/functions/customizer/form-elements.php';
+require get_template_directory() . '/functions/customizer/scroll-animations.php';
+require get_template_directory() . '/functions/customizer/pagination-advanced.php';
+require get_template_directory() . '/functions/customizer/scroll-to-top.php';
+require get_template_directory() . '/functions/customizer/performance.php';
+require get_template_directory() . '/functions/customizer/css-output.php';

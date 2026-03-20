@@ -1,7 +1,7 @@
 <?php
 
 /** Theme version */
-const TAINACAN_INTERFACE_VERSION = '2.9.1';
+const TAINACAN_INTERFACE_VERSION = '2.10.0';
 
 /* Disables Tainacan Theme Helper the_content filter, which is used to build a custom item and taxonomy (terms list) template. */
 if ( !defined('TAINACAN_DISABLE_ITEM_THE_CONTENT_FILTER') )
@@ -459,3 +459,8 @@ require get_template_directory() . '/functions/elasticpress-compat.php';
 require get_template_directory() . '/functions/modal-tooltips.php';
 require get_template_directory() . '/functions/dynamic-css.php';
 require get_template_directory() . '/functions/accessibility.php';
+
+/* New modules added in 2.10.0 */
+require get_template_directory() . '/functions/settings-export.php';
+require get_template_directory() . '/functions/content-blocks.php';
+require get_template_directory() . '/functions/quick-view.php';

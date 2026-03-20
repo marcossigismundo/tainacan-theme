@@ -88,6 +88,42 @@ if ( ! function_exists( 'tainacan_enqueues' ) ) {
 		}
 
 		/**
+		 * New assets added in 2.10.0
+		 */
+		// Sticky header
+		if ( get_theme_mod( 'tainacan_header_sticky_enable', false ) || get_theme_mod( 'tainacan_header_transparent_enable', false ) ) {
+			wp_enqueue_script( 'tainacan-sticky-header', get_template_directory_uri() . '/assets/js/sticky-header.js', [], TAINACAN_INTERFACE_VERSION, true );
+		}
+
+		// Scroll to top
+		if ( get_theme_mod( 'tainacan_scroll_top_enable', true ) ) {
+			wp_enqueue_script( 'tainacan-scroll-to-top', get_template_directory_uri() . '/assets/js/scroll-to-top.js', [], TAINACAN_INTERFACE_VERSION, true );
+			$icon_map = array(
+				'arrow-up'   => '↑',
+				'chevron-up' => '⌃',
+				'caret-up'   => '▲',
+				'double-up'  => '⇑',
+				'rocket'     => '🚀',
+				'top-text'   => 'TOP',
+			);
+			$icon_key = get_theme_mod( 'tainacan_scroll_top_icon', 'arrow-up' );
+			wp_localize_script( 'tainacan-scroll-to-top', 'tainacanScrollToTop', array(
+				'icon' => isset( $icon_map[ $icon_key ] ) ? $icon_map[ $icon_key ] : '↑',
+			) );
+		}
+
+		// Scroll animations
+		if ( get_theme_mod( 'tainacan_scroll_animations_enable', false ) ) {
+			wp_enqueue_script( 'tainacan-scroll-animations', get_template_directory_uri() . '/assets/js/scroll-animations.js', [], TAINACAN_INTERFACE_VERSION, true );
+			wp_localize_script( 'tainacan-scroll-animations', 'tainacanAnimations', array(
+				'type'     => get_theme_mod( 'tainacan_scroll_animation_type', 'fade-up' ),
+				'duration' => intval( get_theme_mod( 'tainacan_scroll_animation_duration', 400 ) ),
+				'delay'    => intval( get_theme_mod( 'tainacan_scroll_animation_delay', 50 ) ),
+				'targets'  => get_theme_mod( 'tainacan_scroll_animation_targets', 'cards-only' ),
+			) );
+		}
+
+		/**
 		 * Comments
 		 */
 		if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) {

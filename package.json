@@ -1,6 +1,6 @@
 {
   "name": "tainacan-theme",
-  "version": "2.9.0",
+  "version": "2.10.0",
   "description": "Tainacan WordPress theme with Sass compilation support",
   "main": "index.js",
   "scripts": {
