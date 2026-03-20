@@ -186,7 +186,7 @@ function tainacan_pastel_colors_customizer( $wp_customize ) {
 	$wp_customize->add_setting( 'tainacan_pastel_palette', array(
 		'default'           => 'tainacan-classic',
 		'sanitize_callback' => 'sanitize_text_field',
-		'transport'         => 'postMessage',
+		'transport'         => 'refresh',
 	) );
 
 	$wp_customize->add_control( 'tainacan_pastel_palette', array(
@@ -196,7 +196,7 @@ function tainacan_pastel_colors_customizer( $wp_customize ) {
 		'choices' => $choices,
 	) );
 
-	// Custom color controls (shown when "custom" palette is selected)
+	// Custom color controls (only visible when "custom" palette is selected)
 	$custom_colors = array(
 		'primary'    => __( 'Primary Color', 'tainacan-interface' ),
 		'secondary'  => __( 'Secondary Color', 'tainacan-interface' ),
@@ -223,12 +223,13 @@ function tainacan_pastel_colors_customizer( $wp_customize ) {
 		$wp_customize->add_setting( $setting_id, array(
 			'default'           => $defaults[ $key ],
 			'sanitize_callback' => 'sanitize_hex_color',
-			'transport'         => 'postMessage',
+			'transport'         => 'refresh',
 		) );
 
 		$wp_customize->add_control( new WP_Customize_Color_Control( $wp_customize, $setting_id, array(
-			'label'   => $label,
-			'section' => 'tainacan_pastel_colors',
+			'label'           => $label,
+			'section'         => 'tainacan_pastel_colors',
+			'active_callback' => 'tainacan_is_custom_palette',
 		) ) );
 	}
 
@@ -246,6 +247,78 @@ function tainacan_pastel_colors_customizer( $wp_customize ) {
 	) );
 }
 add_action( 'customize_register', 'tainacan_pastel_colors_customizer' );
+
+/**
+ * Active callback: show custom color controls only when palette is "custom"
+ */
+function tainacan_is_custom_palette() {
+	return get_theme_mod( 'tainacan_pastel_palette', 'tainacan-classic' ) === 'custom';
+}
+
+/**
+ * Enqueue Customizer control JS to toggle color pickers visibility
+ */
+function tainacan_pastel_customizer_controls_js() {
+	$palettes = tainacan_get_pastel_palettes();
+	$palettes_json = array();
+	foreach ( $palettes as $slug => $p ) {
+		if ( $slug === 'custom' ) continue;
+		$palettes_json[ $slug ] = array(
+			'primary'    => $p['primary'],
+			'secondary'  => $p['secondary'],
+			'accent'     => $p['accent'],
+			'background' => $p['background'],
+			'surface'    => $p['surface'],
+			'text'       => $p['text'],
+			'muted'      => $p['muted'],
+		);
+	}
+
+	$js = '
+	(function($) {
+		wp.customize.bind("ready", function() {
+			var palettes = ' . wp_json_encode( $palettes_json ) . ';
+			var colorKeys = ["primary","secondary","accent","background","surface","text","muted"];
+
+			function toggleCustomColors( palette ) {
+				colorKeys.forEach(function(key) {
+					var ctrl = wp.customize.control("tainacan_pastel_custom_" + key);
+					if ( ctrl ) {
+						if ( palette === "custom" ) {
+							ctrl.container.slideDown(200);
+						} else {
+							ctrl.container.slideUp(200);
+						}
+					}
+				});
+			}
+
+			// Initial state
+			toggleCustomColors( wp.customize("tainacan_pastel_palette").get() );
+
+			// On palette change
+			wp.customize("tainacan_pastel_palette", function(setting) {
+				setting.bind(function(palette) {
+					toggleCustomColors( palette );
+
+					// Update color picker values to show the selected palette colors
+					if ( palette !== "custom" && palettes[palette] ) {
+						colorKeys.forEach(function(key) {
+							var ctrl = wp.customize.control("tainacan_pastel_custom_" + key);
+							if ( ctrl ) {
+								wp.customize("tainacan_pastel_custom_" + key).set( palettes[palette][key] );
+							}
+						});
+					}
+				});
+			});
+		});
+	})(jQuery);
+	';
+
+	wp_add_inline_script( 'customize-controls', $js );
+}
+add_action( 'customize_controls_enqueue_scripts', 'tainacan_pastel_customizer_controls_js' );
 
 /**
  * Output pastel color CSS variables
