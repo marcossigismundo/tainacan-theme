@@ -29,7 +29,7 @@ class Tainacan_Interface_Collection_Advanced {
 
 	private function __construct() {
 		add_action( 'tainacan-register-admin-hooks', array( $this, 'register_hooks' ) );
-		add_filter( 'tainacan-api-response-collection-meta', array( $this, 'api_response_meta' ), 10, 3 );
+		add_filter( 'tainacan-api-response-collection-meta', array( $this, 'api_response_meta' ), 10, 2 );
 	}
 
 	public function register_hooks() {
@@ -40,73 +40,47 @@ class Tainacan_Interface_Collection_Advanced {
 		$admin_hooks = \Tainacan\Admin_Hooks::get_instance();
 
 		// Appearance source selector
-		$admin_hooks->register( 'collection', array(
-			'class'    => get_class( $this ),
-			'instance' => $this,
-			'method'   => 'form_appearance_source',
-			'type'     => 'begin-left',
-			'label'    => __( 'Appearance Settings', 'tainacan-interface' ),
-		) );
+		$admin_hooks->register( 'collection', array( $this, 'form_appearance_source' ), 'begin-left' );
 
 		// Layout type per collection
-		$admin_hooks->register( 'collection', array(
-			'class'    => get_class( $this ),
-			'instance' => $this,
-			'method'   => 'form_layout_type',
-			'type'     => 'begin-left',
-			'label'    => __( 'Item Page Layout', 'tainacan-interface' ),
-		) );
+		$admin_hooks->register( 'collection', array( $this, 'form_layout_type' ), 'begin-left' );
 
 		// Collection accent color
-		$admin_hooks->register( 'collection', array(
-			'class'    => get_class( $this ),
-			'instance' => $this,
-			'method'   => 'form_accent_color',
-			'type'     => 'begin-left',
-			'label'    => __( 'Collection Accent Color', 'tainacan-interface' ),
-		) );
+		$admin_hooks->register( 'collection', array( $this, 'form_accent_color' ), 'begin-left' );
 	}
 
 	/**
 	 * Form: Appearance source selector
+	 * Called by Tainacan Admin_Hooks with no arguments; must return HTML string.
 	 */
-	public function form_appearance_source( $args ) {
-		$collection_id = $args['collection_id'] ?? 0;
-		$source = get_post_meta( $collection_id, 'tainacan_interface_appearance_source', true );
-		if ( ! $source ) {
-			$source = 'global';
-		}
+	public function form_appearance_source() {
+		ob_start();
 		?>
 		<div class="tainacan-interface-appearance-source">
 			<p class="description">
 				<?php esc_html_e( 'Choose whether this collection uses global theme settings or its own custom appearance.', 'tainacan-interface' ); ?>
-				<?php echo tainacan_help_button( 'admin-collection-settings' ); ?>
 			</p>
 			<label>
 				<input type="radio" name="tainacan_interface_appearance_source"
-					value="global" <?php checked( $source, 'global' ); ?> />
+					value="global" checked />
 				<?php esc_html_e( 'Use global settings', 'tainacan-interface' ); ?>
 			</label>
 			<br/>
 			<label>
 				<input type="radio" name="tainacan_interface_appearance_source"
-					value="custom" <?php checked( $source, 'custom' ); ?> />
+					value="custom" />
 				<?php esc_html_e( 'Use custom appearance for this collection', 'tainacan-interface' ); ?>
 			</label>
 		</div>
 		<?php
+		return ob_get_clean();
 	}
 
 	/**
 	 * Form: Layout type per collection
+	 * Called by Tainacan Admin_Hooks with no arguments; must return HTML string.
 	 */
-	public function form_layout_type( $args ) {
-		$collection_id = $args['collection_id'] ?? 0;
-		$layout = get_post_meta( $collection_id, 'tainacan_interface_layout_type', true );
-		if ( ! $layout ) {
-			$layout = 'type-dam';
-		}
-
+	public function form_layout_type() {
 		$layouts = array(
 			'type-dam' => __( 'Document → Attachments → Metadata', 'tainacan-interface' ),
 			'type-dma' => __( 'Document → Metadata → Attachments', 'tainacan-interface' ),
@@ -115,29 +89,30 @@ class Tainacan_Interface_Collection_Advanced {
 			'type-gtm' => __( 'Gallery (top) → Metadata', 'tainacan-interface' ),
 			'type-mg'  => __( 'Metadata → Gallery (sidebar)', 'tainacan-interface' ),
 		);
+		ob_start();
 		?>
 		<div class="tainacan-interface-layout-type">
 			<p class="description">
 				<?php esc_html_e( 'Choose the layout structure for single item pages in this collection.', 'tainacan-interface' ); ?>
-				<?php echo tainacan_help_button( 'admin-layout-types' ); ?>
 			</p>
 			<select name="tainacan_interface_layout_type">
 				<?php foreach ( $layouts as $value => $label ) : ?>
-					<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $layout, $value ); ?>>
+					<option value="<?php echo esc_attr( $value ); ?>">
 						<?php echo esc_html( $label ); ?>
 					</option>
 				<?php endforeach; ?>
 			</select>
 		</div>
 		<?php
+		return ob_get_clean();
 	}
 
 	/**
 	 * Form: Collection accent color
+	 * Called by Tainacan Admin_Hooks with no arguments; must return HTML string.
 	 */
-	public function form_accent_color( $args ) {
-		$collection_id = $args['collection_id'] ?? 0;
-		$color = get_post_meta( $collection_id, 'tainacan_interface_accent_color', true );
+	public function form_accent_color() {
+		ob_start();
 		?>
 		<div class="tainacan-interface-accent-color">
 			<p class="description">
@@ -145,30 +120,22 @@ class Tainacan_Interface_Collection_Advanced {
 			</p>
 			<input type="text" class="tainacan-color-picker"
 				name="tainacan_interface_accent_color"
-				value="<?php echo esc_attr( $color ); ?>"
+				value=""
 				data-default-color="" />
 		</div>
 		<?php
+		return ob_get_clean();
 	}
 
 	/**
-	 * Save collection meta via API
+	 * Add collection theme meta keys to the API response
 	 */
-	public function api_response_meta( $extra_metadata, $request, $collection ) {
-		$body = json_decode( $request->get_body(), true );
-		$collection_id = $collection->get_id();
-
-		$fields = array(
+	public function api_response_meta( $extra_metadata, $request ) {
+		$extra_metadata = array_merge( $extra_metadata, array(
 			'tainacan_interface_appearance_source',
 			'tainacan_interface_layout_type',
 			'tainacan_interface_accent_color',
-		);
-
-		foreach ( $fields as $field ) {
-			if ( isset( $body[ $field ] ) ) {
-				update_post_meta( $collection_id, $field, sanitize_text_field( $body[ $field ] ) );
-			}
-		}
+		) );
 
 		return $extra_metadata;
 	}
